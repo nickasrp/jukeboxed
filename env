@@ -1,0 +1,3 @@
+VITE_SPOTIFY_CLIENT_ID=57d8a1ea7ad64f84ad8965eecd6e1f18
+VITE_SPOTIFY_REDIRECT_URI=http://localhost:5174/callback
+VITE_BACKEND_URL=http://localhost:5000 
