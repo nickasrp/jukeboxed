@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage';
 import FriendPage from './pages/FriendPage';
 import PublicProfile from './pages/PublicProfile';
 import SpotifyCallback from './pages/SpotifyCallback';
+import AboutPage from './pages/AboutPage';
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
           <Header />
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            
             <Route path="/music" element={<MusicPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/friends" element={<FriendPage />} />

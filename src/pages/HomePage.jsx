@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import StarIcon from '@mui/icons-material/Star';
+import GroupIcon from '@mui/icons-material/Group';
 
 function HomePage() {
   const { user } = useAuth();
@@ -69,7 +70,61 @@ function HomePage() {
             Start Exploring
           </Button>
         </Paper>
-
+        <Paper sx={{ 
+          p: 4,
+          mb: 6,
+          borderRadius: 4,
+          background: 'white',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <GroupIcon sx={{ 
+              color: theme.palette.primary.main, 
+              mr: 1,
+              fontSize: '2rem',
+            }} />
+            <Typography 
+              variant="h4" 
+              component="h2"
+              sx={{
+                fontWeight: 600,
+                background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.light} 90%)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              About JukeBoxed
+            </Typography>
+          </Box>
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{
+              fontSize: '1.1rem',
+              lineHeight: 1.6,
+              mb: 3,
+            }}
+          >
+            JukeBoxed is a music discovery platform that connects people through collaborative playlists 
+            and AI-powered recommendations. Our mission is to make music sharing social and effortless.
+          </Typography>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => navigate('/about')}
+              sx={{
+                borderRadius: 3,
+                px: 4,
+                py: 1,
+                borderWidth: 2,
+                '&:hover': {
+                  borderWidth: 2,
+                },
+            } }
+            >
+              Learn More
+            </Button>
+          </Paper>
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
             <Paper sx={{ 
@@ -130,6 +185,8 @@ function HomePage() {
               </Button>
             </Paper>
           </Grid>
+
+        
 
           <Grid item xs={12} md={6}>
             <Paper sx={{ 
@@ -196,4 +253,4 @@ function HomePage() {
   );
 }
 
-export default HomePage; 
+export default HomePage;
