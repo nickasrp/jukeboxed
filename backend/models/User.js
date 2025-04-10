@@ -1,32 +1,33 @@
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   googleId: {
     type: String,
     required: true,
-    unique: true,
+    unique: true
   },
-  username: {
+  displayName: {
     type: String,
-    required: false, // Will be required after initial login
-    unique: true,
-    sparse: true, // Allows null/undefined values without violating unique constraint
+    required: true
   },
   email: {
     type: String,
     required: true,
-  },
-  displayName: {
-    type: String,
-    required: true,
+    unique: true
   },
   profilePicture: {
     type: String,
+    default: ''
+  },
+  username: {
+    type: String,
+    unique: true,
+    sparse: true
   },
   createdAt: {
     type: Date,
-    default: Date.now,
-  },
+    default: Date.now
+  }
 });
 
-module.exports = mongoose.model('User', UserSchema); 
+module.exports = mongoose.model('User', userSchema); 

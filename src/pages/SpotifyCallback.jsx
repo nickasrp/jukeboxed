@@ -1,24 +1,27 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function SpotifyCallback() {
+const SpotifyCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    const accessToken = params.get('access_token');
-
-    if (accessToken) {
-      localStorage.setItem('spotify_access_token', accessToken);
-      navigate('/music');
-    } else {
-      console.error('No access token received');
-      navigate('/');
+    const hash = window.location.hash;
+    if (hash) {
+      const params = new URLSearchParams(hash.substring(1));
+      const token = params.get('access_token');
+      if (token) {
+        localStorage.setItem('spotifyAccessToken', token);
+        // Redirect back to trending page
+        navigate('/trending');
+      }
     }
   }, [navigate]);
 
-  return null;
-}
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  );
+};
 
 export default SpotifyCallback; 

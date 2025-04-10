@@ -1,26 +1,52 @@
 const express = require('express');
 const { protect } = require('../middleware/authMiddleware');
 const User = require('../models/User');
+const multer = require('multer');
+const path = require('path');
 
 const router = express.Router();
+
+// Configure multer for image upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    const filetypes = /jpeg|jpg|png|gif/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb('Error: Images Only!');
+    }
+  }
+});
 
 // @desc    Get user profile
 // @route   GET /api/profile
 // @access  Private
-router.get('/profile', protect, (req, res) => {
-  // req.user is attached by the protect middleware
-  if (req.user) {
-    res.json({
-      id: req.user._id,
-      googleId: req.user.googleId,
-      username: req.user.username,
-      displayName: req.user.displayName,
-      email: req.user.email,
-      profilePicture: req.user.profilePicture,
-      createdAt: req.user.createdAt,
-    });
-  } else {
-    res.status(404).json({ message: 'User not found' });
+router.get('/profile', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-googleId');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -70,6 +96,32 @@ router.put('/username', protect, async (req, res) => {
   } catch (error) {
     console.error('Set Username Error:', error);
     res.status(500).json({ message: 'Server error while updating username' });
+  }
+});
+
+// Upload profile picture
+router.post('/upload-profile-picture', protect, upload.single('profilePicture'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update user's profile picture
+    user.profilePicture = `/uploads/${req.file.filename}`;
+    await user.save();
+
+    res.json({ 
+      message: 'Profile picture uploaded successfully',
+      profilePicture: user.profilePicture
+    });
+  } catch (error) {
+    console.error('Error uploading profile picture:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

@@ -12,6 +12,12 @@ function Header() {
   const navigate = useNavigate();
   const theme = useTheme();
 
+  const getProfilePictureUrl = (picture) => {
+    if (!picture) return null;
+    if (picture.startsWith('http')) return picture;
+    return `http://localhost:5000${picture}`;
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -84,8 +90,8 @@ function Header() {
                 Friends
               </Button>
               <Avatar 
-                src={user.profile_picture} 
-                alt={user.username}
+                src={getProfilePictureUrl(user.profilePicture)} 
+                alt={user.username || user.displayName}
                 sx={{ 
                   width: 36, 
                   height: 36, 

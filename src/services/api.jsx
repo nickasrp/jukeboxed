@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -22,24 +22,31 @@ export const auth = {
 };
 
 export const profile = {
-  getProfile: () => api.get('/profile'),
-  getUserProfile: (username) => api.get(`/user/${username}`),
-  searchUsers: (query) => api.get(`/user/search?q=${query}`),
+  getProfile: () => api.get('/api/profile'),
+  getUserProfile: (username) => api.get(`/api/user/${username}`),
+  searchUsers: (query) => api.get(`/api/user/search?q=${query}`),
 };
 
 export const reviews = {
-  createReview: (data) => api.post('/review', data),
-  getReviews: (userId) => api.get(`/reviews?user_id=${userId}`),
+  createReview: (data) => api.post('/api/reviews', data),
+  getReviews: (userId) => api.get(`/api/reviews?user_id=${userId}`),
 };
 
 export const friends = {
-  getFriends: () => api.get('/friends'),
-  addFriend: (friendId) => api.post('/friends/add', { friend_id: friendId }),
-  removeFriend: (friendId) => api.post('/friends/remove', { friend_id: friendId }),
+  getFriends: () => api.get('/api/friends'),
+  addFriend: (friendId) => api.post('/api/friends/add', { friend_id: friendId }),
+  removeFriend: (friendId) => api.post('/api/friends/remove', { friend_id: friendId }),
 };
 
 export const spotify = {
-  search: (query) => api.get(`/spotify/search?q=${query}`),
+  search: (query, accessToken, page = 1, limit = 30) => api.get('/api/spotify/search', {
+    params: {
+      query,
+      accessToken,
+      page,
+      limit
+    }
+  }),
 };
 
 export default api; 
