@@ -19,8 +19,7 @@ A full-stack application for reviewing and discovering music.
    - `JWT_SECRET`: A secure random string for JWT token signing
    - `GOOGLE_CLIENT_ID`: Your Google OAuth client ID
    - `GOOGLE_CLIENT_SECRET`: Your Google OAuth client secret
-   - `STRIPE_SECRET_KEY`: Your Stripe secret key
-   - `STRIPE_WEBHOOK_SECRET`: Your Stripe webhook secret
+   
 
 ## Security Note
 Never commit your actual `.env` files to version control. The `.gitignore` file is configured to prevent this. Always use the `.env.example` files as templates for setting up your local environment.
@@ -29,7 +28,7 @@ Never commit your actual `.env` files to version control. The `.gitignore` file 
 1. Install dependencies:
    ```bash
    # Frontend
-   cd frontend
+   cd to the root directory
    npm install
 
    # Backend

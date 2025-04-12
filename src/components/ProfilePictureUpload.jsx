@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 
-const ProfilePictureUpload = ({ onUploadSuccess }) => {
+const ProfilePictureUpload = ({ onUploadSuccess, buttonText = "Select Image", buttonStyle }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -56,21 +57,18 @@ const ProfilePictureUpload = ({ onUploadSuccess }) => {
 
     try {
       console.log('Uploading with token:', token); // Debug log
-      const response = await fetch('/api/upload-profile-picture', {
-        method: 'POST',
+      const response = await api.post('/api/upload-profile-picture', formData, {
         headers: {
-          'Authorization': `Bearer ${token}`
-          // Note: Don't set Content-Type header when sending FormData
-          // The browser will set it automatically with the correct boundary
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         },
-        body: formData,
       });
 
       console.log('Upload response status:', response.status); // Debug log
-      const data = await response.json();
+      const data = await response.data;
       console.log('Upload response data:', data); // Debug log
 
-      if (!response.ok) {
+      if (!response.data.success) {
         throw new Error(data.message || 'Upload failed');
       }
 
@@ -97,15 +95,24 @@ const ProfilePictureUpload = ({ onUploadSuccess }) => {
         id="profile-picture-upload"
         type="file"
         onChange={handleFileSelect}
+        disabled={uploading}
       />
       <label htmlFor="profile-picture-upload">
         <Button
-          variant="contained"
           component="span"
+          variant="contained"
           startIcon={<CloudUploadIcon />}
           disabled={uploading}
+          sx={{
+            ...buttonStyle,
+            position: 'relative',
+            overflow: 'hidden',
+            '&:hover': {
+              ...buttonStyle?.['&:hover'],
+            }
+          }}
         >
-          Select Image
+          {uploading ? 'Uploading...' : buttonText}
         </Button>
       </label>
 

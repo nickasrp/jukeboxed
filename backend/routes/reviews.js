@@ -92,4 +92,24 @@ router.get('/track/:trackId', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/reviews/user/:userId
+// @desc    Get all reviews by a specific user
+// @access  Private
+router.get('/user/:userId', protect, async (req, res) => {
+  try {
+    const reviews = await Review.find({ user: req.params.userId })
+      .populate('user', 'username displayName profilePicture')
+      .sort({ createdAt: -1 });
+
+    if (!reviews || reviews.length === 0) {
+      return res.status(404).json({ message: 'No reviews found for this user' });
+    }
+
+    res.json(reviews);
+  } catch (err) {
+    console.error('Error fetching user reviews:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router; 

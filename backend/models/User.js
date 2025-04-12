@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true
   },
+  friends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   createdAt: {
     type: Date,
     default: Date.now

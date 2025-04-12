@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, Paper, Avatar, Button, Grid, useTheme, Card, CardContent, List, ListItem, ListItemText, ListItemAvatar, Divider } from '@mui/material';
+import { Container, Typography, Box, Paper, Avatar, Button, Grid, useTheme, Card, CardContent, List, ListItem, ListItemText, ListItemAvatar, Divider, CardMedia, Rating, CircularProgress } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
@@ -8,11 +8,14 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import StarIcon from '@mui/icons-material/Star';
 import PeopleIcon from '@mui/icons-material/People';
 import ProfilePictureUpload from '../components/ProfilePictureUpload';
+import api from '../services/api';
 
 const ProfilePage = () => {
   const { user, token, setUser } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [recentReviews, setRecentReviews] = useState([]);
   const theme = useTheme();
   const navigate = useNavigate();
 
@@ -39,8 +42,19 @@ const ProfilePage = () => {
         const data = await response.json();
         console.log('Profile data received:', data);
         setProfileData(data);
+        
+        // Fetch recent reviews
+        const reviewsResponse = await api.get('/api/reviews/my-reviews');
+        if (reviewsResponse.data && reviewsResponse.data.success) {
+          // Sort reviews by date and take the 6 most recent
+          const sortedReviews = reviewsResponse.data.data
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice(0, 6);
+          setRecentReviews(sortedReviews);
+        }
       } catch (error) {
         console.error('Error fetching profile:', error);
+        setError('Failed to load profile');
       } finally {
         setLoading(false);
       }
@@ -83,177 +97,30 @@ const ProfilePage = () => {
     { id: 3, title: "Hotel California", artist: "Eagles" }
   ];
 
-  const recentReviews = [
-    { id: 1, song: "Bohemian Rhapsody", rating: 5, comment: "A masterpiece of rock opera!" },
-    { id: 2, song: "Stairway to Heaven", rating: 5, comment: "Timeless classic with amazing guitar solo" },
-    { id: 3, song: "Hotel California", rating: 4, comment: "Great storytelling and guitar work" }
-  ];
-
-  // Mock data for stats (replace with actual data later)
-  const stats = {
-    songs: 42,
-    following: 128,
-    followers: 256
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (err) {
+      console.error('Error logging out:', err);
+    }
   };
 
-  if (!loading && !profileData && user) {
+  if (loading) {
     return (
       <Container maxWidth="lg">
-        <Box sx={{ my: 4 }}>
-          <Paper sx={{ 
-            p: 4,
-            mb: 4,
-            background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.light} 90%)`,
-            color: 'white',
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mr: 3 }}>
-                <Avatar
-                  src={getProfilePictureUrl(user.profilePicture)}
-                  sx={{ 
-                    width: 100, 
-                    height: 100, 
-                    mb: 2,
-                    border: '4px solid white',
-                  }}
-                >
-                  {!user.profilePicture && <PersonIcon sx={{ fontSize: 50 }} />}
-                </Avatar>
-                <ProfilePictureUpload onUploadSuccess={handleUploadSuccess} buttonText="Edit Profile" />
-              </Box>
-              <Box>
-                <Typography variant="h4" component="h1" gutterBottom>
-                  {user.username || user.email}
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
-              <Card 
-                sx={{ 
-                  p: 3, 
-                  height: '100%',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[8],
-                  }
-                }}
-                onClick={handleFavoritesClick}
-              >
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <MusicNoteIcon sx={{ color: theme.palette.primary.main, mr: 1 }} />
-                    <Typography variant="h5" component="h2">
-                      Favorite Songs
-                    </Typography>
-                  </Box>
-                  <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                    No favorite songs yet. Start adding your favorites!
-                  </Typography>
-                  
-                  {/* Favorites Preview */}
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle1" sx={{ mb: 1, color: theme.palette.primary.main }}>
-                      Recent Favorites
-                    </Typography>
-                    <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-                      {recentFavorites.map((favorite) => (
-                        <React.Fragment key={favorite.id}>
-                          <ListItem alignItems="flex-start">
-                            <ListItemAvatar>
-                              <MusicNoteIcon sx={{ color: theme.palette.primary.main }} />
-                            </ListItemAvatar>
-                            <ListItemText
-                              primary={favorite.title}
-                              secondary={favorite.artist}
-                            />
-                          </ListItem>
-                          <Divider variant="inset" component="li" />
-                        </React.Fragment>
-                      ))}
-                    </List>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Card 
-                sx={{ 
-                  p: 3, 
-                  height: '100%',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: theme.shadows[8],
-                  }
-                }}
-                onClick={handleReviewsClick}
-              >
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <StarIcon sx={{ color: theme.palette.primary.main, mr: 1 }} />
-                    <Typography variant="h5" component="h2">
-                      My Reviews
-                    </Typography>
-                  </Box>
-                  <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                    No reviews yet. Share your thoughts on your favorite songs!
-                  </Typography>
-                  
-                  {/* Reviews Preview */}
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle1" sx={{ mb: 1, color: theme.palette.primary.main }}>
-                      Recent Reviews
-                    </Typography>
-                    <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-                      {recentReviews.map((review) => (
-                        <React.Fragment key={review.id}>
-                          <ListItem alignItems="flex-start">
-                            <ListItemAvatar>
-                              <StarIcon sx={{ color: theme.palette.primary.main }} />
-                            </ListItemAvatar>
-                            <ListItemText
-                              primary={review.song}
-                              secondary={
-                                <>
-                                  <Typography
-                                    component="span"
-                                    variant="body2"
-                                    color="text.primary"
-                                  >
-                                    {Array(review.rating).fill('★').join('')}
-                                  </Typography>
-                                  <br />
-                                  {review.comment}
-                                </>
-                              }
-                            />
-                          </ListItem>
-                          <Divider variant="inset" component="li" />
-                        </React.Fragment>
-                      ))}
-                    </List>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+        <Box sx={{ my: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <CircularProgress />
         </Box>
       </Container>
     );
   }
 
-  if (loading) {
+  if (error) {
     return (
-      <Container>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Typography>Loading profile...</Typography>
+      <Container maxWidth="lg">
+        <Box sx={{ my: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <Typography color="error" variant="h6">{error}</Typography>
         </Box>
       </Container>
     );
@@ -262,185 +129,160 @@ const ProfilePage = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
-        <Paper sx={{ 
-          p: 4,
-          mb: 4,
-          background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.light} 90%)`,
-          color: 'white',
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mr: 4 }}>
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            p: 4, 
+            mb: 4,
+            borderRadius: '20px',
+            background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.light} 90%)`,
+            color: 'white',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            transition: 'transform 0.3s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-5px)',
+            }
+          }}
+        >
+          <Grid container spacing={4} alignItems="center">
+            <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Avatar
                 src={getProfilePictureUrl(profileData?.profilePicture || user?.profilePicture)}
                 sx={{ 
-                  width: 120, 
-                  height: 120, 
+                  width: 150, 
+                  height: 150, 
                   mb: 2,
                   border: '4px solid white',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
+                }}
+              />
+              <ProfilePictureUpload 
+                onUploadSuccess={handleUploadSuccess} 
+                buttonText="Edit Profile"
+                buttonStyle={{
+                  backgroundColor: 'white',
+                  color: theme.palette.primary.main,
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  }
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <Typography 
+                variant="h4" 
+                gutterBottom
+                sx={{ 
+                  color: 'white',
+                  fontWeight: 'bold',
+                  textTransform: 'capitalize',
+                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.2)'
                 }}
               >
-                {!profileData?.profilePicture && !user?.profilePicture && <PersonIcon sx={{ fontSize: 60 }} />}
-              </Avatar>
-              <ProfilePictureUpload onUploadSuccess={handleUploadSuccess} buttonText="Edit Profile" />
-            </Box>
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '120px' }}>
-              <Typography variant="h2" component="h1" sx={{ mb: 2, textTransform: 'capitalize' }}>
-                {profileData?.username || user?.username || user?.email}
+                {profileData?.username || 'User'}
               </Typography>
-              <Box sx={{ display: 'flex', gap: 8 }}>
-                <Box 
-                  sx={{ 
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      opacity: 0.8,
-                    }
-                  }}
-                  onClick={handleReviewsClick}
-                >
-                  <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold' }}>
-                    {stats.songs}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'white' }}>
-                    Songs
-                  </Typography>
-                </Box>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold' }}>
-                    {stats.following}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'white' }}>
-                    Following
-                  </Typography>
-                </Box>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold' }}>
-                    {stats.followers}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'white' }}>
-                    Followers
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Box>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                Member since: {new Date(profileData?.createdAt || user?.createdAt).toLocaleDateString()}
+              </Typography>
+            </Grid>
+          </Grid>
         </Paper>
 
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <Card 
-              sx={{ 
-                p: 3, 
-                height: '100%',
-                cursor: 'pointer',
-                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: theme.shadows[8],
-                }
-              }}
-              onClick={handleFavoritesClick}
-            >
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <MusicNoteIcon sx={{ color: theme.palette.primary.main, mr: 1 }} />
-                  <Typography variant="h5" component="h2">
-                    Favorite Songs
-                  </Typography>
-                </Box>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                  No favorite songs yet. Start adding your favorites!
-                </Typography>
-                
-                {/* Favorites Preview */}
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle1" sx={{ mb: 1, color: theme.palette.primary.main }}>
-                    Recent Favorites
-                  </Typography>
-                  <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-                    {recentFavorites.map((favorite) => (
-                      <React.Fragment key={favorite.id}>
-                        <ListItem alignItems="flex-start">
-                          <ListItemAvatar>
-                            <MusicNoteIcon sx={{ color: theme.palette.primary.main }} />
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={favorite.title}
-                            secondary={favorite.artist}
-                          />
-                        </ListItem>
-                        <Divider variant="inset" component="li" />
-                      </React.Fragment>
-                    ))}
-                  </List>
-                </Box>
-              </CardContent>
-            </Card>
+        {/* Recent Reviews Section */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h5">
+            Recent Reviews
+          </Typography>
+          <Button 
+            variant="contained" 
+            sx={{ 
+              backgroundColor: theme.palette.primary.main,
+              color: 'white',
+              '&:hover': {
+                backgroundColor: theme.palette.primary.dark,
+              }
+            }}
+            onClick={() => navigate('/reviews')}
+          >
+            View All Reviews
+          </Button>
+        </Box>
+        {recentReviews.length > 0 ? (
+          <Grid container spacing={3}>
+            {recentReviews.map((review) => (
+              <Grid item xs={12} sm={6} md={4} key={review._id}>
+                <Card 
+                  sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    cursor: 'pointer',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      transition: 'transform 0.2s ease-in-out',
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    }
+                  }}
+                  onClick={() => window.open(`https://open.spotify.com/track/${review.spotifyTrackId}`, '_blank')}
+                >
+                  <CardMedia
+                    component="img"
+                    image={review.albumImage}
+                    alt={review.trackName}
+                    sx={{ 
+                      height: 200,
+                      objectFit: 'cover'
+                    }}
+                  />
+                  <CardContent>
+                    <Typography variant="h6" noWrap sx={{ color: 'white' }}>
+                      {review.trackName}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" noWrap>
+                      {review.artistName}
+                    </Typography>
+                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+                      <Rating value={review.rating} readOnly precision={0.5} />
+                      <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                        ({review.rating})
+                      </Typography>
+                    </Box>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        mt: 1,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }}
+                    >
+                      {review.reviewText || 'No review text provided'}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                      Reviewed on {new Date(review.createdAt).toLocaleDateString()}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
           </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Card 
-              sx={{ 
-                p: 3, 
-                height: '100%',
-                cursor: 'pointer',
-                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: theme.shadows[8],
-                }
-              }}
-              onClick={handleReviewsClick}
-            >
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <StarIcon sx={{ color: theme.palette.primary.main, mr: 1 }} />
-                  <Typography variant="h5" component="h2">
-                    My Reviews
-                  </Typography>
-                </Box>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                  No reviews yet. Share your thoughts on your favorite songs!
-                </Typography>
-                
-                {/* Reviews Preview */}
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle1" sx={{ mb: 1, color: theme.palette.primary.main }}>
-                    Recent Reviews
-                  </Typography>
-                  <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-                    {recentReviews.map((review) => (
-                      <React.Fragment key={review.id}>
-                        <ListItem alignItems="flex-start">
-                          <ListItemAvatar>
-                            <StarIcon sx={{ color: theme.palette.primary.main }} />
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={review.song}
-                            secondary={
-                              <>
-                                <Typography
-                                  component="span"
-                                  variant="body2"
-                                  color="text.primary"
-                                >
-                                  {Array(review.rating).fill('★').join('')}
-                                </Typography>
-                                <br />
-                                {review.comment}
-                              </>
-                            }
-                          />
-                        </ListItem>
-                        <Divider variant="inset" component="li" />
-                      </React.Fragment>
-                    ))}
-                  </List>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        ) : (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+            <Typography variant="body1" color="text.secondary">
+              You haven't reviewed any songs yet.
+            </Typography>
+          </Box>
+        )}
       </Box>
     </Container>
   );

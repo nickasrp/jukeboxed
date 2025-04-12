@@ -9,9 +9,11 @@ import ProfilePage from './pages/ProfilePage';
 import FriendsPage from './pages/FriendsPage';
 import PublicProfile from './pages/PublicProfile';
 import SpotifyCallback from './pages/SpotifyCallback';
+import AboutPage from './pages/AboutPage';
 import AuthCallback from './pages/AuthCallback';
 import TrendingSongsPage from './pages/TrendingSongsPage';
 import ReviewsPage from './pages/ReviewsPage';
+import FriendReviewsPage from './pages/FriendReviewsPage';
 
 function App() {
   return (
@@ -22,6 +24,7 @@ function App() {
           <Header />
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/music" element={<MusicPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/friends" element={<FriendsPage />} />
@@ -30,6 +33,7 @@ function App() {
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/trending" element={<TrendingSongsPage />} />
             <Route path="/reviews" element={<ReviewsPage />} />
+            <Route path="/friend-reviews/:username" element={<FriendReviewsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

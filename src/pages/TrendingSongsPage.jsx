@@ -107,14 +107,36 @@ const TrendingSongsPage = () => {
   if (!accessToken) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-3xl font-bold text-white mb-8">Connect with Spotify</h1>
-        <p className="text-gray-400 mb-8">To view your top tracks, please connect your Spotify account.</p>
-        <button
-          onClick={handleConnectSpotify}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-200"
-        >
-          Connect Spotify
-        </button>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          gap: 2,
+          mt: 4
+        }}>
+          <Typography variant="h6" color="text.secondary" align="center">
+            Please sign in to get started
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleConnectSpotify}
+            sx={{
+              borderRadius: 3,
+              px: 4,
+              py: 1.5,
+              fontSize: '1.1rem',
+              textTransform: 'none',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                transition: 'all 0.2s ease-in-out',
+              },
+            }}
+          >
+            Connect to Spotify
+          </Button>
+        </Box>
       </div>
     );
   }
